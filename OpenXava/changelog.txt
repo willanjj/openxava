@@ -1,16 +1,6 @@
 Change Log for OpenXava project
 ===============================
 
-- New projects can be launched with Run As > Java Applicaction.
-- DBManager launcher class no longer included in new projects, moved to OpenXava as an ant target.
-- Left menu can be hidden or shown by the user.
-- Resposive left menu, it is shown or hidden depending on page size.
-- Fix: Selected menu option protrudes the left modules menu with Internet Explorer.
-- Wizard for creating a new OpenXava project in OpenXava Studio.
-- Lombok library added to OpenXava and OpenXava Studio supports Lombok by default.		
-- Java included in distribution changed to Eclipse JustJ.
-- Eclipse Platform for OpenXava Studio upgraded to Eclipse 2020-09.
-
 OpenXava 6.4.2 (2020-11-9)
 --------------------------
 - Lessons 7 and 8 of course upgraded to latest OpenXava features.
@@ -20,7 +10,6 @@ OpenXava 6.4.2 (2020-11-9)
 - Fix: Label and column width changed by user not persisted if the column isn't in the original @Tab.
 - Fix: @NoFrame references are not well aligned with flowLayout=true.
 - Fix: Two groups in a row (separated by comma) are placed one below other with flowLayout=true.
-- Fix: WEBURL button overlapped with URL with long URLs.
 - Fix: WEBURL button renders incorrectly when flowLayout=true.
 - Fix: Property ICON in list without label is aligned to top when there are too many columns.
 - Fix: JasperReportBaseAction actions fail with databases with no READ_UNCOMMITTED support like Oracle.

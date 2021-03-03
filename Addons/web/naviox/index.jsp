@@ -1,3 +1,4 @@
+<%@page import="com.openxava.naviox.model.User"%>
 <%Servlets.setCharacterEncoding(request, response);%>
 
 <%@include file="../xava/imports.jsp"%>
@@ -11,16 +12,18 @@
 <%@page import="org.openxava.util.Users"%>
 <%@page import="com.openxava.naviox.util.NaviOXPreferences"%>
 <%@page import="org.openxava.util.Is"%>
+<%@page import="org.openxava.jpa.XPersistence"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.List"%>
+<%@page import="java.lang.*"%>
+<%@page import="org.openxava.application.meta.MetaModule"%>
 
 <jsp:useBean id="context" class="org.openxava.controller.ModuleContext" scope="session"/>
 <jsp:useBean id="modules" class="com.openxava.naviox.Modules" scope="session"/>
 
 <%
-if ("true".equals(request.getParameter("init"))) {
-	context.resetModule(request);
-}
 String windowId = context.getWindowId(request);
-context.setCurrentWindowId(windowId);
+context.setCurrentWindowId(windowId);	
 String app = request.getParameter("application");
 String module = context.getCurrentModule(request);
 Locales.setCurrent(request);
@@ -33,8 +36,41 @@ org.openxava.controller.ModuleManager manager = (org.openxava.controller.ModuleM
 		.get(app, module, "manager", "org.openxava.controller.ModuleManager");
 manager.setSession(session);
 manager.setApplicationName(request.getParameter("application"));
-manager.setModuleName(module); // In order to show the correct description in head 
+manager.setModuleName(module); // In order to show the correct description in head
+
 boolean isFirstSteps = com.openxava.naviox.Modules.FIRST_STEPS.equals(module);
+
+String numeroItemCarritos="0";
+String imagenURL="";
+String userName="";
+
+try{
+	numeroItemCarritos=context.get(app, module, "aquatic_numeroItemCarrito").toString();
+}catch(Exception e){}
+
+List<Object[]> listaBarraIconos=new ArrayList();
+
+
+try {
+String esquemaActual=XPersistence.getPersistenceUnitProperties().get("hibernate.default_schema").toString();
+listaBarraIconos = XPersistence.getManager()
+		.createNativeQuery("select distinct mdl.name,bar.icono,bar.color_formato_html,bar.orden FROM "+esquemaActual+".oxroles_oxmodules rmod "+
+				"INNER JOIN "+esquemaActual+".oxmodules mdl "+
+				"ON rmod.modules_name=mdl.name "+
+				"INNER JOIN "+esquemaActual+".oxroles rol "+
+				"ON rmod.roles_name = rol.name "+
+				"INNER JOIN "+esquemaActual+".oxusers_oxroles usrl "+
+				"ON usrl.roles_name = rmod.roles_name "+
+				"INNER JOIN "+esquemaActual+".oxusers usu "+
+				"ON usu.name = usrl.oxusers_name "+
+				"INNER JOIN "+esquemaActual+".ui_bar_sup_der bar "+
+				"ON bar.id_usuario_barra = usu.name AND bar.modules_name = mdl.name "+
+				"WHERE usu.name='"+Users.getCurrent()+"' AND bar.esta_activo='TRUE' ORDER BY bar.orden").getResultList();					
+
+} catch (Exception e) {
+
+}
+
 %>
 
 <!DOCTYPE html>
@@ -59,10 +95,12 @@ boolean isFirstSteps = com.openxava.naviox.Modules.FIRST_STEPS.equals(module);
 		
 		<div class="module-wrapper">
 			<div id="module_header">
+
 				<% if (!isFirstSteps) { %>
-				<a id="module_header_menu_button" href="javascript:naviox.showModulesList('<%=request.getParameter("application")%>', '<%=request.getParameter("module")%>')">
+				<a id="module_header_menu_button" href="javascript:naviox.hideModulesList('<%=request.getParameter("application")%>', '<%=request.getParameter("module")%>')">
 					<i class="mdi mdi-menu"></i></a>
 				<% } %>	
+
 				<span id="module_title">
 					<%
 					if (hasModules && !isFirstSteps) {
@@ -84,34 +122,71 @@ boolean isFirstSteps = com.openxava.naviox.Modules.FIRST_STEPS.equals(module);
 					<%String moduleTitle = hasModules?modules.getCurrentModuleLabel():modules.getCurrentModuleDescription(request);%>
 					<%=moduleTitle%>
 				</span>	
+				
+			
+			
+				
 				<a href="javascript:naviox.bookmark()" title="<xava:message key='<%=modules.isCurrentBookmarked(request)?"unbookmark_module":"bookmark_module"%>'/>"> 
 					<i id="bookmark" class='mdi mdi-star<%=modules.isCurrentBookmarked(request)?"":"-outline"%>'></i> 
 				</a>
 				<div id="sign_in_out">
+				<ul>
 					<%
 					if (Is.emptyString(NaviOXPreferences.getInstance().getAutologinUser())) {
-						String userName = Users.getCurrent();
+						userName = Users.getCurrent();
 						String currentModule = request.getParameter("module");
-						boolean showSignIn = userName == null && !currentModule.equals("SignIn");						
+						boolean showSignIn = userName == null && !currentModule.equals("SignIn");
+						
 						if (showSignIn) {
 							String selected = "SignIn".equals(currentModule)?"selected":"";
 					%>
-					<a href="<%=request.getContextPath()%>/m/SignIn" class="sign-in <%=selected%>">
-							<xava:message key="signin"/>
-					</a>
+					<li>
+						<a href="<%=request.getContextPath()%>/m/SignIn" class="sign-in <%=selected%>">
+								<xava:message key="signin"/>
+						</a>
+					</li>
 					<%
 						}
 						if (userName != null) {
 							String organization = Organizations.getCurrent(request);
 							if (organization == null) organization = "";
-					%>
-					<a  href="<%=request.getContextPath()%>/naviox/signOut.jsp?organization=<%=organization%>" class="sign-in"><xava:message key="signout"/> (<%=userName%>)</a>
-					<%
-						}
+							if(!listaBarraIconos.isEmpty()){
+			   					for(int i=0;i<listaBarraIconos.size();i++){
+			   						Object[] datos=listaBarraIconos.get(i);	   						
+			   						MetaModule modulo=new  MetaModule();
+									modulo.setName(datos[0].toString());
+			   					%>
+			   					<li>								   
+			   						<a href="<%=modules.getModuleURI(request, modulo)%>?init=true" title = "<%=datos[0].toString()%>" class="sign-in"><i class="mdi-x-large mdi-<%=datos[1]%>" style="padding: 0px 10px 10px 0px;color: #<%=datos[2]%>;"></i></a>
+								</li>			   								
+			   					<% }
+			   				}		   					
+		   					%>
+		   								<li>
+						<a href="<%=request.getContextPath()%>/naviox/signOut.jsp?organization=<%=organization%>"
+						class="sign-in"><xava:message key="signout" /> (<%=userName%>)
+							<i class="mdi-x-large mdi-exit-to-app" style="color: red;position: relative;top: 3px;"></i></a>
+						<%
+					imagenURL=User.find(userName).getImagenURL();
+					imagenURL=(imagenURL==null?"":imagenURL);
+					if(imagenURL.indexOf("https://platform-lookaside.fbsbx.com")> -1){
+					%> 
+					<li>
+					<img class="img-facebook border-2 brc-white-tp1 radius-round" src="<%=imagenURL%>">
+					</li>
+					
+					<% }else{ %>
+					<li>
+						<a href="<%=request.getContextPath()%>/m/MyPersonalData?init=true" title = "Datos Personales" class="sign-in border-2 brc-white-tp1 radius-round"><i class="mdi-x-large mdi-account" style="padding: 0px 10px 10px 0px;color: white;"></i></a>
+					</li>					
+							<%
+						}					
+					}
 					} 
 					%>
+					</ul>					
 				</div>
-			</div>				
+			</div>		
 			<% if ("SignIn".equals(module)) {  %>
 			<jsp:include page='signIn.jsp'/>
 			<% } else { %>

@@ -1319,6 +1319,7 @@ public class View implements java.io.Serializable {
 		catch (ElementNotFoundException ex) {
 			// It could be a view property of a XML component
 		}
+		// tmp fin
 		moveViewValuesToCollectionValues();
 	}	
 	

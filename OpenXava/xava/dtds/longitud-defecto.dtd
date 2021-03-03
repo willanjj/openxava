@@ -10,4 +10,5 @@
 <!ATTLIST para-tipo
  clase CDATA #REQUIRED
  longitud CDATA #REQUIRED
+ escala CDATA #REQUIRED
 >

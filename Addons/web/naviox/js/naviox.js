@@ -78,7 +78,7 @@ naviox.hideModulesList = function(application, module) {
 }
 
 naviox.showModulesList = function(application, module) {
-	$('#module_header_menu_button').hide();
+	$('#module_header_menu_button').show();
 	$('#module_extended_title').hide();
 	$('#modules_list').toggle("slide", function() { 
 		$('#modules_list_hide').fadeIn();

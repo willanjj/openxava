@@ -1,9 +1,8 @@
 package com.openxava.naviox.impl;
 
 import javax.servlet.*;
-import org.openxava.component.parse.*;
-import com.openxava.naviox.model.*;
 
+import com.openxava.naviox.util.*;
 
 /**
  * 
@@ -11,12 +10,11 @@ import com.openxava.naviox.model.*;
  */
 public class Initializer {
 	
-	private static boolean initiated = false; 
-	
 	public static void init(ServletRequest request) {
-		if (initiated) return;
-		AnnotatedClassParser.getManagedClassNames().add(SignIn.class.getName());	
-		initiated = true;
+		Organizations.init(request);
+		ActionsRefiner.init();
+		MembersRefiner.init(); 
+		OrganizationReseter.init(); 
 	}
 
 }
